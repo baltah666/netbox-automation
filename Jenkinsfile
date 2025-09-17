@@ -52,7 +52,7 @@ pipeline {
                     git config user.email "baltah666@gmail.com"
 
                     # Set remote URL with token authentication
-                    git remote set-url origin https://$GIT_USER:$GIT_TOKEN@github.com/baltah666/pawel.git
+                    git remote set-url origin https://github.com/baltah666/netbox-automation.git
 
                     # Add all generated files
                     git add .
