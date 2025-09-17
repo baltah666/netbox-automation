@@ -33,6 +33,8 @@ pipeline {
             steps {
                 sh '''
                 . venv/bin/activate
+		export NETBOX_API="http://192.168.1.254:8000/"
+		export NETBOX_TOKEN="1479d3740f85e8ab5900b72d31b89cb81fdc2a06"
                 ansible-playbook -i netbox_inv.yml generate_config.yml
                 '''
             }
