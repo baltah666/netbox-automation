@@ -1,7 +1,7 @@
 {
     "allow": "GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS",
     "ansible_facts": {
-        "discovered_interpreter_python": "/home/baltah/ansible-netbox-venv/bin/python3.12"
+        "discovered_interpreter_python": "/usr/bin/python3"
     },
     "api_version": "4.4",
     "changed": false,
@@ -13,7 +13,7 @@
     "cookies": {},
     "cookies_string": "",
     "cross_origin_opener_policy": "same-origin",
-    "date": "Sun, 21 Sep 2025 14:03:34 GMT",
+    "date": "Sun, 21 Sep 2025 14:06:11 GMT",
     "elapsed": 0,
     "failed": false,
     "json": {
@@ -191,5 +191,5 @@
     "vary": "HX-Request, Accept-Language, Cookie, origin",
     "x_content_type_options": "nosniff",
     "x_frame_options": "SAMEORIGIN",
-    "x_request_id": "ccf74b3e-ab26-499d-ab98-f01fb6dfceaf"
+    "x_request_id": "73bca6c3-2c45-4bb0-9044-43d31e0b3c33"
 }
