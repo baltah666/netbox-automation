@@ -4,6 +4,6 @@ token: 1479d3740f85e8ab5900b72d31b89cb81fdc2a06
 validate_certs: false
 config_context: true
 group_by:
-#  - sites
+  - sites
   - device_roles
-#
+
