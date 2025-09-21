@@ -4,6 +4,7 @@ pipeline {
     environment {
         NETBOX_TOKEN = '1479d3740f85e8ab5900b72d31b89cb81fdc2a06'
         NETBOX_API   = 'http://192.168.1.254:8000/api/'
+        GITHUB_TOKEN = credentials('github-cred-token') // <-- inject token
     }
 
     stages {
@@ -43,14 +44,15 @@ pipeline {
         stage('Git Push Changes') {
             steps {
                 sh '''
-                git config user.name "jenkins"
-                git config user.email "jenkins@local"
-                
-                # Check for changes
+                git config user.name "Abdulilah Baltah"
+                git config user.email "baltah666@gmail.com"
+
                 if [ -n "$(git status --porcelain)" ]; then
                     git add .
                     git commit -m "Automated update from Jenkins build ${BUILD_NUMBER}"
-                    git push origin main
+
+                    # Push using the injected token
+                    git push https://${GITHUB_TOKEN}@github.com/baltah666/netbox-automation.git main
                 else
                     echo "No changes to commit."
                 fi
