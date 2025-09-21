@@ -8,7 +8,7 @@
           accept: "application/json"
           Authorization: "Token {{ netbox_token }}"
   register: device
-
+  
 - name: 2 - Get Interfaces
   uri:
       url: "{{ netbox_url }}api/dcim/interfaces/?device={{ inventory_hostname }}&limit=0"
@@ -49,6 +49,17 @@
           Authorization: "Token {{ netbox_token }}"
   register: vlans
 
+# Uncomment for debugging the JSON Data registered by a play
+# Change the var value to whatever you need eg. var: ip_addresses.json.results
+#- name: Display Json Data
+#  ansible.builtin.debug:
+#     var: device.json.results
+
+# Uncomment to display the Ansible Host Vars for a host 
+#- name: Display all variables/facts known for a host
+#  ansible.builtin.debug:
+#     var: hostvars[inventory_hostname]
+
 - name: 6 - Create temporary folder for Device Configs
   file:
     dest: "{{ configs_directory }}/{{ inventory_hostname }}"
@@ -64,14 +75,3 @@
       src: "templates/{{ platforms[0] }}-set.j2"
       dest: "{{ configs_directory }}/{{ inventory_hostname }}/{{ inventory_hostname }}.set"
   when: platforms[0] == 'juniper-junos'
-
-- name: 8 - Save all registered variables to JSON files
-  copy:
-    content: "{{ lookup('ansible.builtin.vars', item) | to_nice_json }}"
-    dest: "{{ configs_directory }}/{{ inventory_hostname }}/{{ item }}.json"
-  loop:
-    - device
-    - interfaces
-    - ip_addresses
-    - site
-    - vlans
