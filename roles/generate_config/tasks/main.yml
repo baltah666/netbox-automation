@@ -51,9 +51,9 @@
 
 # Uncomment for debugging the JSON Data registered by a play
 # Change the var value to whatever you need eg. var: ip_addresses.json.results
-- name: Display Json Data
-  ansible.builtin.debug:
-     var: device.json.results
+#- name: Display Json Data
+#  ansible.builtin.debug:
+#     var: device.json.results
 
 # Uncomment to display the Ansible Host Vars for a host 
 #- name: Display all variables/facts known for a host
