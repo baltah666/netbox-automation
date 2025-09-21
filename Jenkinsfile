@@ -40,6 +40,23 @@ pipeline {
             }
         }
 
+        stage('Git Push Changes') {
+            steps {
+                sh '''
+                git config user.name "jenkins"
+                git config user.email "jenkins@local"
+                
+                # Check for changes
+                if [ -n "$(git status --porcelain)" ]; then
+                    git add .
+                    git commit -m "Automated update from Jenkins build ${BUILD_NUMBER}"
+                    git push origin main
+                else
+                    echo "No changes to commit."
+                fi
+                '''
+            }
+        }
     }
 
     post {
