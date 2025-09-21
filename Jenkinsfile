@@ -33,8 +33,8 @@ pipeline {
             steps {
                 sh '''
                 . venv/bin/activate
-		export NETBOX_API="http://192.168.1.254:8000/"
-		export NETBOX_TOKEN="1479d3740f85e8ab5900b72d31b89cb81fdc2a06"
+                export NETBOX_API="http://192.168.1.254:8000/"
+                export NETBOX_TOKEN="1479d3740f85e8ab5900b72d31b89cb81fdc2a06"
                 ansible-playbook -i netbox_inv.yml generate_config.yml
                 '''
             }
@@ -48,6 +48,7 @@ pipeline {
                     git config user.email "baltah666@gmail.com"
                     git remote set-url origin https://$GIT_USER:$GIT_TOKEN@github.com/baltah666/netbox-automation.git
                     git add .
+                    # Only commit if there are changes
                     if ! git diff --cached --quiet; then
                         git commit -m "Automated config update by Jenkins"
                         git push origin main
