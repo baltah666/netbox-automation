@@ -7,3 +7,10 @@ group_by:
   - sites
   - device_roles
 
+all:
+  vars:
+    ansible_connection: network_cli
+    ansible_network_os: cisco.ios.ios
+    ansible_user: admin          # replace with your device username
+    ansible_password: cisco  # or use Ansible Vault
+    ansible_ssh_common_args: '-oKexAlgorithms=+diffie-hellman-group14-sha1 -oHostKeyAlgorithms=+ssh-rsa -oStrictHostKeyChecking=no'
