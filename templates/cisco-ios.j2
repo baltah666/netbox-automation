@@ -8,7 +8,6 @@ service password-encryption
 service linenumber
 service compress-config
 service sequence-numbers
-no platform punt-keepalive disable-kernel-core
 !
 hostname {{ device.json.results[0]['name'] }}
 !
@@ -38,9 +37,6 @@ ip name-server {{ name_server }}
 !
 spanning-tree extend system-id
 !
-redundancy
- mode none
-!
 lldp run
 !
 {% for intf in interfaces.json.results %}
@@ -66,7 +62,7 @@ snmp-server location {{ site.json.results[0]['region']['name'] }} [{{ latitude }
 snmp-server location {{ site.json.results[0]['region']['name'] }}
 {% endif %}
 !
-logging source-interface GigabitEthernet0
+logging source-interface GigabitEthernet3/3
 {% for syslog_server in device.json.results[0].config_context['syslog-servers'] %}
 logging host {{ syslog_server }} transport udp port 1514
 {% endfor %}
