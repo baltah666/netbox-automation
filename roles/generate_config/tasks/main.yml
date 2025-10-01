@@ -1,15 +1,7 @@
 ---
 - name: 1 - Get Devices
   uri:
-    url: >-
-      {{ netbox_url }}api/dcim/devices/
-      {% if devices is defined and devices != "All" %}
-        ?name__in={{ devices | replace(" ", "") }}
-      {% elif site is defined %}
-        ?site={{ site }}
-      {% else %}
-        ?name={{ inventory_hostname }}
-      {% endif %}
+    url: "{{ netbox_url }}api/dcim/devices/{% if devices is defined and devices != 'All' %}?name__in={{ devices | replace(' ', '') | trim }}{% elif site is defined %}?site={{ site | trim }}{% else %}?name={{ inventory_hostname | trim }}{% endif %}"
     method: GET
     return_content: yes
     headers:
@@ -19,7 +11,7 @@
 
 - name: 2 - Get Interfaces
   uri:
-    url: "{{ netbox_url }}api/dcim/interfaces/?device={{ inventory_hostname }}&limit=0"
+    url: "{{ netbox_url }}api/dcim/interfaces/?device={{ inventory_hostname | trim }}&limit=0"
     method: GET
     return_content: yes
     headers:
@@ -29,7 +21,7 @@
 
 - name: 3 - Get IP Addresses
   uri:
-    url: "{{ netbox_url }}api/ipam/ip-addresses/?device={{ inventory_hostname }}"
+    url: "{{ netbox_url }}api/ipam/ip-addresses/?device={{ inventory_hostname | trim }}"
     method: GET
     return_content: yes
     headers:
@@ -39,13 +31,7 @@
 
 - name: 4 - Get Site Details
   uri:
-    url: >-
-      {{ netbox_url }}api/dcim/sites/
-      {% if site is defined %}
-        ?name={{ site }}
-      {% else %}
-        ?name={{ device.json.results[0]['site']['name'] }}
-      {% endif %}
+    url: "{{ netbox_url }}api/dcim/sites/{% if site is defined %}?name={{ site | trim }}{% else %}?name={{ device.json.results[0]['site']['name'] | trim }}{% endif %}"
     method: GET
     return_content: yes
     headers:
