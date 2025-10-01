@@ -61,6 +61,7 @@ interface {{ intf.name }}
   {% endif %}
   no shutdown
   {% else %}
+  default interface {{ intf.name }}
   shutdown
   {% endif %}
 {% endif %}
