@@ -30,39 +30,47 @@ lldp run
 {% for intf in interfaces.json.results %}
 {% set intf_ips = ip_addresses.json.results | selectattr('assigned_object.name', 'equalto', intf.name) | list %}
 {% set has_ip = intf_ips | length > 0 %}
+
 {% if intf.name.startswith('vlan.') %}
 interface vlan {{ intf.name.split('.')[1] }}
-{% else %}
-interface {{ intf.name }}
-{% endif %}
-{% if intf.description %}
+  {% if intf.description %}
   description {{ intf.description }}
-{% endif %}
-{% if intf.name.startswith('vlan.') %}
+  {% endif %}
   {% for ip in intf_ips %}
   ip address {{ ip.address.split('/')[0] }} {{ ip.address | ansible.utils.ipaddr('netmask') }}
   {% endfor %}
   no shutdown
 {% else %}
   {% if has_ip %}
+interface {{ intf.name }}
+  {% if intf.description %}
+  description {{ intf.description }}
+  {% endif %}
   no switchport
   {% for ip in intf_ips %}
   ip address {{ ip.address.split('/')[0] }} {{ ip.address | ansible.utils.ipaddr('netmask') }}
   {% endfor %}
   no shutdown
   {% elif intf.mode and intf.mode.value == "access" %}
+interface {{ intf.name }}
+  {% if intf.description %}
+  description {{ intf.description }}
+  {% endif %}
   switchport mode access
   switchport access vlan {{ intf.untagged_vlan.vid }}
   no shutdown
   {% elif intf.mode and intf.mode.value in ["tagged", "tagged-all"] %}
+interface {{ intf.name }}
+  {% if intf.description %}
+  description {{ intf.description }}
+  {% endif %}
   switchport mode trunk
   {% if intf.tagged_vlans %}
   switchport trunk allowed vlan {{ intf.tagged_vlans | map(attribute='vid') | join(',') }}
   {% endif %}
   no shutdown
   {% else %}
-  default interface {{ intf.name }}
-  shutdown
+default interface {{ intf.name }}
   {% endif %}
 {% endif %}
 !
