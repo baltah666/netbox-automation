@@ -90,13 +90,11 @@ tacacs server {{ tacacs.name }}
   single-connection
 !
 {% endfor %}
-
+!
 aaa group server tacacs+ Techit_Tac_Grp
 {% for tacacs in device.json.results[0].config_context['tacacs-servers'] %}
   server name {{ tacacs.name }}
 {% endfor %}
-!!! Change to MGMT VLAN, use only if required !!!
-!!! ip tacacs source-interface vlan 300
 !
 {% for name_server in device.json.results[0].config_context['name-servers'] %}
 ip name-server {{ name_server }}
