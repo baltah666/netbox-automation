@@ -1,4 +1,4 @@
-#jinja2: lstrip_blocks: True, trim_blocks: True
+# jinja2: lstrip_blocks: True, trim_blocks: True
 no service pad
 service tcp-keepalives-in
 service tcp-keepalives-out
@@ -15,10 +15,8 @@ boot-start-marker
 boot-end-marker
 !
 vrf definition Mgmt-intf
- !
  address-family ipv4
  exit-address-family
- !
  address-family ipv6
  exit-address-family
 !
@@ -35,20 +33,20 @@ interface vlan {{ intf.name.split('.')[1] }}
 {% else %}
 interface {{ intf.name }}
 {% endif %}
-{%- if intf.description %}
+{% if intf.description %}
   description {{ intf.description }}
-{%- endif %}
+{% endif %}
 {% if intf.name.startswith('vlan.') %}
-  {% for ip in intf_ips -%}
+{% for ip in intf_ips %}
   ip address {{ ip.address.split('/')[0] }} {{ ip.address | ansible.utils.ipaddr('netmask') }}
-  {%- endfor %}
+{% endfor %}
   no shutdown
 {% else %}
   {% if has_ip %}
   no switchport
-    {% for ip in intf_ips -%}
+{% for ip in intf_ips %}
   ip address {{ ip.address.split('/')[0] }} {{ ip.address | ansible.utils.ipaddr('netmask') }}
-    {%- endfor %}
+{% endfor %}
   no shutdown
   {% elif intf.mode and intf.mode.value == "access" %}
   switchport mode access
@@ -56,9 +54,9 @@ interface {{ intf.name }}
   no shutdown
   {% elif intf.mode and intf.mode.value in ["tagged", "tagged-all"] %}
   switchport mode trunk
-    {% if intf.tagged_vlans %}
+{% if intf.tagged_vlans %}
   switchport trunk allowed vlan {{ intf.tagged_vlans | map(attribute='vid') | join(',') }}
-    {% endif %}
+{% endif %}
   no shutdown
   {% else %}
   shutdown
@@ -66,7 +64,6 @@ interface {{ intf.name }}
 {% endif %}
 !
 {% endfor %}
-
 snmp-server community {{ device.json.results[0].config_context['snmp-ro-community'] }} RO
 {% set latitude = site.json.results[0]['latitude'] %}
 {% set longitude = site.json.results[0]['longitude'] %}
@@ -76,7 +73,7 @@ snmp-server location {{ site.json.results[0]['region']['name'] }} [{{ latitude }
 snmp-server location {{ site.json.results[0]['region']['name'] }}
 {% endif %}
 !
-logging source-interface GigabitEthernet0
+logging source-interface GigabitEthernet3/3
 {% for syslog_server in device.json.results[0].config_context['syslog-servers'] %}
 logging host {{ syslog_server }} transport udp port 1514
 {% endfor %}
