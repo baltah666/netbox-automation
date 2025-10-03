@@ -15,10 +15,8 @@ boot-start-marker
 boot-end-marker
 !
 vrf definition Mgmt-intf
- !
  address-family ipv4
  exit-address-family
- !
  address-family ipv6
  exit-address-family
 !
@@ -37,37 +35,36 @@ interface vlan {{ intf.name.split('.')[1] }}
 interface {{ intf.name }}
 {% endif %}
 
-{%- if intf.description %}
-  description {{ intf.description }}
-{%- endif %}
-
-{% if intf.name.startswith('vlan.') %}
-  {% for ip in intf_ips -%}
-  ip address {{ ip.address.split('/')[0] }} {{ ip.address | ansible.utils.ipaddr('netmask') }}
-  {%- endfor %}
-  no shutdown
-{% else %}
-  {% if has_ip %}
-  no switchport
-    {% for ip in intf_ips -%}
-  ip address {{ ip.address.split('/')[0] }} {{ ip.address | ansible.utils.ipaddr('netmask') }}
-    {%- endfor %}
-  no shutdown
-  {% elif intf.mode and intf.mode.value == "access" %}
-  switchport mode access
-  switchport access vlan {{ intf.untagged_vlan.vid }}
-  no shutdown
-  {% elif intf.mode and intf.mode.value in ["tagged", "tagged-all"] %}
-  switchport mode trunk
-    {% if intf.tagged_vlans %}
-  switchport trunk allowed vlan {{ intf.tagged_vlans | map(attribute='vid') | join(',') }}
-    {% endif %}
-  no shutdown
-  {% else %}
-  shutdown
-  {% endif %}
+{% if intf.description %}
+description {{ intf.description }}
 {% endif %}
 
+{% if intf.name.startswith('vlan.') %}
+  {% for ip in intf_ips %}
+ip address {{ ip.address.split('/')[0] }} {{ ip.address | ansible.utils.ipaddr('netmask') }}
+  {% endfor %}
+no shutdown
+{% else %}
+  {% if has_ip %}
+no switchport
+    {% for ip in intf_ips %}
+ip address {{ ip.address.split('/')[0] }} {{ ip.address | ansible.utils.ipaddr('netmask') }}
+    {% endfor %}
+no shutdown
+  {% elif intf.mode and intf.mode.value == "access" %}
+switchport mode access
+switchport access vlan {{ intf.untagged_vlan.vid }}
+no shutdown
+  {% elif intf.mode and intf.mode.value in ["tagged", "tagged-all"] %}
+switchport mode trunk
+    {% if intf.tagged_vlans %}
+switchport trunk allowed vlan {{ intf.tagged_vlans | map(attribute='vid') | join(',') }}
+    {% endif %}
+no shutdown
+  {% else %}
+shutdown
+  {% endif %}
+{% endif %}
 !
 {% endfor %}
 
