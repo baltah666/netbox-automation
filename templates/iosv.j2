@@ -24,6 +24,13 @@ aaa new-model
 no ip bootp server
 spanning-tree extend system-id
 lldp run
+
+archive
+ log config
+  logging enable
+  notify syslog contenttype plaintext
+  hidekeys
+
 !
 {% for intf in interfaces.json.results %}
 {% set intf_ips = ip_addresses.json.results | selectattr('assigned_object.name', 'equalto', intf.name) | list %}
@@ -100,9 +107,57 @@ aaa group server tacacs+ Techit_Tac_Grp
 ip name-server {{ name_server }}
 {% endfor %}
 !
+banner exec ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+banner incoming ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+banner login ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+!
 line con 0
+ exec-timeout 30 0
+ authorization exec Console_AAA
  logging synchronous
+ login authentication Console_AAA
+ transport preferred none
  stopbits 1
 line aux 0
  stopbits 1
+line vty 0 4
+ session-timeout 30
+ exec-timeout 30 0
+ authorization commands 1 Remote_AAA
+ authorization commands 15 Remote_AAA
+ authorization exec Remote_AAA
+ accounting commands 1 Remote_AAA
+ accounting commands 15 Remote_AAA
+ accounting exec Remote_AAA
+ logging synchronous
+ login authentication Remote_AAA
+ transport preferred none
+ transport input all
+line vty 5 15
+ logging synchronous
+
 end
