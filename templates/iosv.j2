@@ -8,7 +8,6 @@ service password-encryption
 service linenumber
 service compress-config
 service sequence-numbers
-no platform punt-keepalive disable-kernel-core
 !
 hostname {{ device.json.results[0]['name'] }}
 !
@@ -26,8 +25,6 @@ vrf definition Mgmt-intf
 aaa new-model
 no ip bootp server
 spanning-tree extend system-id
-redundancy
- mode none
 lldp run
 !
 {% for intf in interfaces.json.results %}
