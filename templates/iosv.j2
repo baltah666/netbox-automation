@@ -105,7 +105,6 @@ interface {{ intf.name }}
  spanning-tree portfast edge
  {% elif intf.mode and intf.mode.value == "access" %}
  switchport access vlan {{ intf.untagged_vlan.vid }}
- switchport trunk encapsulation dot1q
  switchport mode access
  media-type rj45
  negotiation auto
