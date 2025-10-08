@@ -109,30 +109,30 @@ interface {{ intf.name }}
  media-type rj45
  negotiation auto
  {% elif intf.mode and intf.mode.value in ["tagged", "tagged-all"] %}
- {% set vlan_list = intf.tagged_vlans | map(attribute='vid') | list | sort %}
- {% set ranges = [] %}
- {% if vlan_list %}
-     {% set start = vlan_list[0] %}
-     {% set prev = start %}
-     {% for vlan in vlan_list[1:] %}
-         {% if vlan == prev + 1 %}
-             {% set prev = vlan %}
-         {% else %}
-             {% if start == prev %}
-                 {% set _ = ranges.append(start|string) %}
-             {% else %}
-                 {% set _ = ranges.append(start|string ~ '-' ~ prev|string) %}
-             {% endif %}
-             {% set start = vlan %}
-             {% set prev = vlan %}
-         {% endif %}
-     {% endfor %}
-     {% if start == prev %}
-         {% set _ = ranges.append(start|string) %}
-     {% else %}
-         {% set _ = ranges.append(start|string ~ '-' ~ prev|string) %}
-     {% endif %}
- {% endif %}
+  {% set vlan_list = intf.tagged_vlans | map(attribute='vid') | list | unique | sort %}
+  {% set ranges = [] %}
+  {% if vlan_list %}
+      {% set start = vlan_list[0] %}
+      {% set prev = start %}
+      {% for vlan in vlan_list[1:] %}
+          {% if vlan == prev + 1 %}
+              {% set prev = vlan %}
+          {% else %}
+              {% if start == prev %}
+                  {% set _ = ranges.append(start|string) %}
+              {% else %}
+                  {% set _ = ranges.append(start|string ~ '-' ~ prev|string) %}
+              {% endif %}
+              {% set start = vlan %}
+              {% set prev = vlan %}
+          {% endif %}
+      {% endfor %}
+      {% if start == prev %}
+          {% set _ = ranges.append(start|string) %}
+      {% else %}
+          {% set _ = ranges.append(start|string ~ '-' ~ prev|string) %}
+      {% endif %}
+  {% endif %}
  switchport trunk allowed vlan {{ ranges | join(',') }}
  switchport trunk encapsulation dot1q
  switchport mode trunk
