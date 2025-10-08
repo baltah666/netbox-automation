@@ -10,31 +10,31 @@ service linenumber
 service compress-config
 service sequence-numbers
 !
-hostname {{ hostname }}
+hostname {{ device.json.results[0]['name'] }}
 !
 boot-start-marker
 boot-end-marker
 !
 !
 vrf definition Mgmt-intf
+ !
  address-family ipv4
  exit-address-family
+ !
  address-family ipv6
  exit-address-family
 !
-enable secret {{ enable_secret }}
+enable secret {{ device.json.results[0].config_context['enable-secret'] }}
 !
-username admin privilege 15 password 7 {{ admin_password }}
+username admin privilege 15 password 7 {{ device.json.results[0].config_context['admin-password'] }}
 aaa new-model
 !
 aaa group server tacacs+ gns3group
-{% for server in tacacs_servers_gns3 %}
- server name {{ server }}
-{% endfor %}
+ server name tacacsgui
 !
 aaa group server tacacs+ Techit_Tac_Grp
-{% for server in tacacs_servers_techit %}
- server name {{ server }}
+{% for tacacs in device.json.results[0].config_context['tacacs-servers'] %}
+ server name {{ tacacs.name }}
 {% endfor %}
 !
 aaa authentication login default group gns3group local
@@ -60,9 +60,9 @@ aaa accounting commands 15 Remote_AAA start-stop group gns3group
 aaa session-id common
 !
 no ip bootp server
-ip domain-name {{ domain_name }}
-{% for ns in name_servers %}
-ip name-server {{ ns }}
+ip domain-name {{ device.json.results[0].config_context['domain-name'] }}
+{% for name_server in device.json.results[0].config_context['name-servers'] %}
+ip name-server {{ name_server }}
 {% endfor %}
 ip cef
 no ipv6 cef
@@ -79,91 +79,81 @@ spanning-tree extend system-id
 vlan internal allocation policy ascending
 lldp run
 !
-{% for intf in interfaces %}
+{% for intf in interfaces.json.results %}
+{% set intf_ips = ip_addresses.json.results | selectattr('assigned_object.name', 'equalto', intf.name) | list %}
+{% set has_ip = intf_ips | length > 0 %}
+{% if intf.name.startswith('vlan.') %}
+interface Vlan{{ intf.name.split('.')[1] }}
+{% else %}
 interface {{ intf.name }}
+{% endif %}
 {% if intf.description %}
  description {{ intf.description }}
 {% endif %}
-
-{% if intf.mode and intf.mode.value in ["tagged", "tagged-all"] %}
-    {% set vlan_list = intf.tagged_vlans | map(attribute='vid') | map('int') | list | unique | sort %}
-    {% set ranges = [] %}
-    {% if vlan_list %}
-        {% set start = vlan_list[0] %}
-        {% set prev = start %}
-        {% for vlan in vlan_list[1:] %}
-            {% if vlan == prev + 1 %}
-                {% set prev = vlan %}
-            {% else %}
-                {% if start == prev %}
-                    {% set _ = ranges.append(start|string) %}
-                {% else %}
-                    {% set _ = ranges.append(start|string ~ '-' ~ prev|string) %}
-                {% endif %}
-                {% set start = vlan %}
-                {% set prev = vlan %}
-            {% endif %}
-        {% endfor %}
-        {% if start == prev %}
-            {% set _ = ranges.append(start|string) %}
-        {% else %}
-            {% set _ = ranges.append(start|string ~ '-' ~ prev|string) %}
-        {% endif %}
-    {% endif %}
-    switchport trunk allowed vlan {{ ranges | join(',') }}
-    switchport trunk encapsulation dot1q
-    switchport mode trunk
-    logging event trunk-status
-{% elif intf.mode and intf.mode.value == "access" %}
-    switchport access vlan {{ intf.access_vlan }}
-    switchport mode access
-{% elif intf.mode and intf.mode.value == "none" %}
-    no switchport
-    {% if intf.ip_address %}
-    ip address {{ intf.ip_address }} {{ intf.mask }}
-    {% endif %}
-{% endif %}
-
+{% if intf.name.startswith('vlan.') %}
+{% for ip in intf_ips %}
+ ip address {{ ip.address.split('/')[0] }} {{ ip.address | ansible.utils.ipaddr('netmask') }}
+{% endfor %}
+{% else %}
+ {% if has_ip %}
+ no switchport
+{% for ip in intf_ips %}
+ ip address {{ ip.address.split('/')[0] }} {{ ip.address | ansible.utils.ipaddr('netmask') }}
+{% endfor %}
+ negotiation auto
+ no cdp enable
+ spanning-tree portfast edge
+ {% elif intf.mode and intf.mode.value == "access" %}
+ switchport access vlan {{ intf.untagged_vlan.vid }}
+ switchport mode access
  media-type rj45
  negotiation auto
-{% if intf.shutdown %}
- shutdown
-{% endif %}
+ {% elif intf.mode and intf.mode.value in ["tagged", "tagged-all"] %}
+ switchport trunk allowed vlan {{ intf.tagged_vlans | map(attribute='vid') | join(',') }}
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ logging event trunk-status
+ media-type rj45
+ negotiation auto
  spanning-tree guard loop
+ {% else %}
+ shutdown
+ media-type rj45
+ negotiation auto
+ {% endif %}
+{% endif %}
 !
 {% endfor %}
-
-ip default-gateway {{ default_gateway }}
+ip default-gateway {{ device.json.results[0].config_context['default-gateway'] }}
 ip forward-protocol nd
 !
 no ip http server
 no ip http secure-server
 !
-{% for route in static_routes %}
+{% for route in device.json.results[0].config_context['static-routes'] %}
 ip route {{ route.network }} {{ route.mask }} {{ route.next_hop }}
 {% endfor %}
-ip tacacs source-interface {{ tacacs_source_interface }}
+ip tacacs source-interface {{ device.json.results[0].config_context['tacacs-source-intf'] }}
 ip ssh version 2
 !
 ip access-list standard HomeSnmpReadAcl
-{% for acl in snmp_acl %}
- permit {{ acl }}
+ permit {{ device.json.results[0].config_context['snmp-access'] }}
+!
+logging source-interface {{ device.json.results[0].config_context['logging-source-intf'] }}
+{% for syslog_server in device.json.results[0].config_context['syslog-servers'] %}
+logging host {{ syslog_server }} transport udp port 1514
 {% endfor %}
 !
-logging source-interface {{ logging_source_interface }}
-{% for log_host in logging_hosts %}
-logging host {{ log_host.address }} transport {{ log_host.transport }} port {{ log_host.port }}
-{% endfor %}
-!
-snmp-server community {{ snmp_community }} RO
-snmp-server location {{ snmp_location }}
-{% for tacacs in tacacs_servers %}
+snmp-server community {{ device.json.results[0].config_context['snmp-ro-community'] }} RO
+snmp-server location {{ site.json.results[0]['region']['name'] }}
+tacacs server tacacsgui
+ address ipv4 {{ device.json.results[0].config_context['tacacsgui-ip'] }}
+ key {{ device.json.results[0].config_context['tacacsgui-key'] }}
+{% for tacacs in device.json.results[0].config_context['tacacs-servers'] %}
 tacacs server {{ tacacs.name }}
  address ipv4 {{ tacacs.address }}
  key {{ tacacs.key }}
-{% if tacacs.single_connection %}
  single-connection
-{% endif %}
 {% endfor %}
 !
 control-plane
@@ -221,8 +211,8 @@ line vty 0 4
 line vty 5 15
  logging synchronous
 !
-{% for ntp in ntp_servers %}
-ntp server {{ ntp }}
+{% for ntp_server in device.json.results[0].config_context['ntp-servers'] %}
+ntp server {{ ntp_server }}
 {% endfor %}
 !
 end
