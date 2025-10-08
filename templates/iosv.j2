@@ -17,10 +17,10 @@ boot-end-marker
 !
 !
 vrf definition Mgmt-intf
- !
+ ! 
  address-family ipv4
  exit-address-family
- !
+ ! 
  address-family ipv6
  exit-address-family
 !
@@ -96,20 +96,20 @@ interface {{ intf.name }}
 {% endfor %}
 {% else %}
  {% if has_ip %}
- no switchport
-{% for ip in intf_ips %}
- ip address {{ ip.address.split('/')[0] }} {{ ip.address | ansible.utils.ipaddr('netmask') }}
-{% endfor %}
- negotiation auto
- no cdp enable
- spanning-tree portfast edge
+  no switchport
+ {% for ip in intf_ips %}
+  ip address {{ ip.address.split('/')[0] }} {{ ip.address | ansible.utils.ipaddr('netmask') }}
+ {% endfor %}
+  negotiation auto
+  no cdp enable
+  spanning-tree portfast edge
  {% elif intf.mode and intf.mode.value == "access" %}
- switchport access vlan {{ intf.untagged_vlan.vid }}
- switchport mode access
- media-type rj45
- negotiation auto
+  switchport access vlan {{ intf.untagged_vlan.vid }}
+  switchport mode access
+  media-type rj45
+  negotiation auto
  {% elif intf.mode and intf.mode.value in ["tagged", "tagged-all"] %}
-  {% set vlan_list = intf.tagged_vlans | map(attribute='vid') | list | unique | sort %}
+  {% set vlan_list = intf.tagged_vlans | map(attribute='vid') | map('int') | list | unique | sort %}
   {% set ranges = [] %}
   {% if vlan_list %}
       {% set start = vlan_list[0] %}
@@ -133,17 +133,17 @@ interface {{ intf.name }}
           {% set _ = ranges.append(start|string ~ '-' ~ prev|string) %}
       {% endif %}
   {% endif %}
- switchport trunk allowed vlan {{ ranges | join(',') }}
- switchport trunk encapsulation dot1q
- switchport mode trunk
- logging event trunk-status
- media-type rj45
- negotiation auto
- spanning-tree guard loop
+  switchport trunk allowed vlan {{ ranges | join(',') }}
+  switchport trunk encapsulation dot1q
+  switchport mode trunk
+  logging event trunk-status
+  media-type rj45
+  negotiation auto
+  spanning-tree guard loop
  {% else %}
- shutdown
- media-type rj45
- negotiation auto
+  shutdown
+  media-type rj45
+  negotiation auto
  {% endif %}
 {% endif %}
 !
