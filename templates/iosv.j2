@@ -109,7 +109,7 @@ interface {{ intf.name }}
  media-type rj45
  negotiation auto
  {% elif intf.mode and intf.mode.value in ["tagged", "tagged-all"] %}
- switchport trunk allowed vlan {{ intf.tagged_vlans | map(attribute='vid') | join(',') }}
+# switchport trunk allowed vlan {{ intf.tagged_vlans | map(attribute='vid') | join(',') }}
  switchport trunk encapsulation dot1q
  switchport mode trunk
  logging event trunk-status
