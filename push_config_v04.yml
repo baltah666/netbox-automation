@@ -4,7 +4,7 @@
   hosts: all
   gather_facts: no
   vars:
-    config_dir: "/var/jenkins_home/workspace/Generate-config-v04/configs"
+    config_dir: "/var/jenkins_home/workspace/Generate-config-v02/configs"
 
   tasks:
 
