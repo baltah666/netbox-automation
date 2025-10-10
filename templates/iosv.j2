@@ -15,7 +15,6 @@ hostname {{ device.json.results[0]['name'] }}
 boot-start-marker
 boot-end-marker
 !
-!
 vrf definition Mgmt-intf
  !
  address-family ipv4
@@ -90,12 +89,13 @@ interface {{ intf.name }}
 {% if intf.description %}
  description {{ intf.description }}
 {% endif %}
+
 {% if intf.name.startswith('vlan.') %}
 {% for ip in intf_ips %}
  ip address {{ ip.address.split('/')[0] }} {{ ip.address | ansible.utils.ipaddr('netmask') }}
 {% endfor %}
 {% else %}
- {% if has_ip %}
+{% if has_ip %}
  no switchport
 {% for ip in intf_ips %}
  ip address {{ ip.address.split('/')[0] }} {{ ip.address | ansible.utils.ipaddr('netmask') }}
@@ -103,26 +103,30 @@ interface {{ intf.name }}
  negotiation auto
  no cdp enable
  spanning-tree portfast edge
- {% elif intf.mode and intf.mode.value == "access" %}
+
+{% elif intf.mode and intf.mode.value == "access" %}
  switchport access vlan {{ intf.untagged_vlan.vid }}
  switchport mode access
  media-type rj45
  negotiation auto
- {% elif intf.mode and intf.mode.value in ["tagged", "tagged-all"] %}
+
+{% elif intf.mode and intf.mode.value in ["tagged", "tagged-all"] %}
  switchport trunk encapsulation dot1q
  switchport mode trunk
  logging event trunk-status
  media-type rj45
  negotiation auto
  spanning-tree guard loop
- {% else %}
+
+{% else %}
  shutdown
  media-type rj45
  negotiation auto
- {% endif %}
+{% endif %}
 {% endif %}
 !
 {% endfor %}
+
 ip default-gateway {{ device.json.results[0].config_context['default-gateway'] }}
 ip forward-protocol nd
 !
